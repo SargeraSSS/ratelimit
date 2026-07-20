@@ -19,6 +19,33 @@ func TestTokenBucket_ExhaustsCapacity(t *testing.T) {
 		t.Error("6th request: want denied (bucket empty), got accepted")
 	}
 }
+
+func TestTokenBucket_ExhaustsCapacity_2(t *testing.T) {
+	tests := []struct {
+		name     string
+		capacity float64
+		want     bool
+	}{
+		{"capacity of 0", 0, true},
+		{"capacity of 1", 1, true},
+		{"capacity of 5", 5, true},
+		{"capacity of 6", 6, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewTokenBucket(tt.capacity, 1)
+			for i := 0; i < int(tt.capacity); i++ {
+				if !b.Request(1) {
+					t.Fatalf("request %d: want accepted, got denied", i)
+				}
+			}
+			if b.Request(1) {
+				t.Error("request after exhaustion: want denied, got accepted")
+			}
+		})
+	}
+}
+
 func TestTokenBucket_RefillsOverTime(t *testing.T) {
 	b := NewTokenBucket(1, 100)
 
