@@ -46,6 +46,28 @@ func TestTokenBucket_ExhaustsCapacity_2(t *testing.T) {
 	}
 }
 
+func TestTokenBucket_NeverExceedsCapacity(t *testing.T) {
+	capacity := 3.0
+	rate := 100.0
+
+	b := NewTokenBucket(capacity, rate)
+
+	time.Sleep(200 * time.Millisecond)
+
+	accepted := 0
+	attempts := int(capacity) + 2
+
+	for i := 0; i < attempts; i++ {
+		if b.Request(1) {
+			accepted++
+		}
+	}
+
+	if accepted != int(capacity) {
+		t.Errorf("accepted %d requests after long sleep, want exactly %d (capacity)", accepted, int(capacity))
+	}
+}
+
 func TestTokenBucket_RefillsOverTime(t *testing.T) {
 	b := NewTokenBucket(1, 100)
 
