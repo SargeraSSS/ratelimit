@@ -10,6 +10,7 @@ type Limiter struct {
 	refillRate float64
 	mutex      sync.Mutex
 	buckets    map[string]*clientEntry
+	stopChan   chan struct{}
 }
 type clientEntry struct {
 	bucket   *TokenBucket
@@ -43,4 +44,27 @@ func (l *Limiter) getOrCreateBucket(clientID string) *TokenBucket {
 		lastSeen: time.Now(),
 	}
 	return newBucket
+}
+func (l *Limiter) cleanup() {
+	for clientID, entry := range l.buckets {
+		if time.Since(entry.lastSeen) > 5*time.Minute {
+			delete(l.buckets, clientID)
+		}
+	}
+}
+
+func (l *Limiter) cleanupLoop() {
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			l.mutex.Lock()
+			l.cleanup()
+			l.mutex.Unlock()
+		case <-l.stopChan:
+			return
+		}
+	}
 }
