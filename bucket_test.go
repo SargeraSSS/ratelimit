@@ -20,16 +20,15 @@ func TestTokenBucket_ExhaustsCapacity(t *testing.T) {
 	}
 }
 
-func TestTokenBucket_ExhaustsCapacity_2(t *testing.T) {
+func TestTokenBucket_ExhaustsCapacity_Table(t *testing.T) {
 	tests := []struct {
 		name     string
 		capacity float64
-		want     bool
 	}{
-		{"capacity of 0", 0, true},
-		{"capacity of 1", 1, true},
-		{"capacity of 5", 5, true},
-		{"capacity of 6", 6, false},
+		{"capacity of 0", 0},
+		{"capacity of 1", 1},
+		{"capacity of 5", 5},
+		{"capacity of 6", 6},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
