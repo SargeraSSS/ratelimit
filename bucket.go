@@ -22,6 +22,7 @@ func NewTokenBucket(maxTokens float64, refillRate float64) *TokenBucket {
 		lastRefillTime: time.Now(),
 	}
 }
+
 func (tb *TokenBucket) refill() {
 	now := time.Now()
 	duration := now.Sub(tb.lastRefillTime)

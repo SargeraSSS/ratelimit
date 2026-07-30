@@ -12,12 +12,13 @@ type Limiter struct {
 	buckets    map[string]*clientEntry
 	stopChan   chan struct{}
 }
+
 type clientEntry struct {
 	bucket   *TokenBucket
 	lastSeen time.Time
 }
 
-const cleanupTreshold = 5 * time.Minute
+const cleanupThreshold = 5 * time.Minute
 
 func NewLimiter(capacity, refillRate float64) *Limiter {
 	l := &Limiter{
@@ -50,9 +51,10 @@ func (l *Limiter) getOrCreateBucket(clientID string) *TokenBucket {
 	}
 	return newBucket
 }
+
 func (l *Limiter) cleanup() {
 	for clientID, entry := range l.buckets {
-		if time.Since(entry.lastSeen) > cleanupTreshold {
+		if time.Since(entry.lastSeen) > cleanupThreshold {
 			delete(l.buckets, clientID)
 		}
 	}
