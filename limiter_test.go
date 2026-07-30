@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestLimiter_ConcurrentAccess(t *testing.T) {
@@ -38,5 +39,27 @@ func TestLimiter_ConcurrentAccess(t *testing.T) {
 
 	if got := accepted.Load(); got != 100 {
 		t.Errorf("client1: want exactly 100 accepted, got %d", got)
+	}
+}
+
+func TestLimiter_CleanupRemovesStaleClients(t *testing.T) {
+	l := NewLimiter(10, 1)
+	defer l.Close()
+
+	l.Allow("active")
+	l.Allow("stale")
+
+	l.mutex.Lock()
+	l.buckets["stale"].lastSeen = time.Now().Add(-2 * cleanupThreshold)
+	l.cleanup()
+	_, staleExists := l.buckets["stale"]
+	_, activeExists := l.buckets["active"]
+	l.mutex.Unlock()
+
+	if staleExists {
+		t.Error("stale client: want removed, got kept")
+	}
+	if !activeExists {
+		t.Error("active client: want kept, got removed")
 	}
 }
