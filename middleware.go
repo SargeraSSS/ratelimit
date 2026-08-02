@@ -24,9 +24,6 @@ func RateLimitMiddleware(limiter *Limiter) gin.HandlerFunc {
 	}
 }
 
-// retryAfterSeconds renders a wait as the whole seconds the Retry-After header
-// requires. It rounds up: rounding down would invite the client back before the
-// tokens exist, and the retry would be refused a second time.
 func retryAfterSeconds(wait time.Duration) string {
 	seconds := int64(math.Ceil(wait.Seconds()))
 	if seconds < 1 {
