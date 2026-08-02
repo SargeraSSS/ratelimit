@@ -31,15 +31,15 @@ func (tb *TokenBucket) refill() {
 	tb.lastRefillTime = now
 }
 
-func (tb *TokenBucket) Request(tokens float64) bool {
+func (tb *TokenBucket) Request(weight float64) (bool, time.Duration) {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
 
 	tb.refill()
-	if tokens <= tb.tokens {
-		tb.tokens -= tokens
-		return true
+	if weight <= tb.tokens {
+		tb.tokens -= weight
+		return true, 0
 	}
 
-	return false
+	return false, time.Duration((weight - tb.tokens) / tb.refillRate * float64(time.Second))
 }

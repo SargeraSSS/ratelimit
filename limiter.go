@@ -31,7 +31,7 @@ func NewLimiter(capacity, refillRate float64) *Limiter {
 	return l
 }
 
-func (l *Limiter) Allow(clientID string) bool {
+func (l *Limiter) Allow(clientID string) (bool, time.Duration) {
 	bucket := l.getOrCreateBucket(clientID)
 	return bucket.Request(1)
 }

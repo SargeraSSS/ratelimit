@@ -11,11 +11,11 @@ func TestTokenBucket_ExhaustsCapacity(t *testing.T) {
 	b := NewTokenBucket(5, 1)
 
 	for i := 0; i < 5; i++ {
-		if !b.Request(1) {
+		if allowed, _ := b.Request(1); !allowed {
 			t.Fatalf("request %d: want accepted, got denied", i)
 		}
 	}
-	if b.Request(1) {
+	if allowed, _ := b.Request(1); allowed {
 		t.Error("6th request: want denied (bucket empty), got accepted")
 	}
 }
@@ -34,11 +34,11 @@ func TestTokenBucket_ExhaustsCapacity_Table(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			b := NewTokenBucket(tt.capacity, 1)
 			for i := 0; i < int(tt.capacity); i++ {
-				if !b.Request(1) {
+				if allowed, _ := b.Request(1); !allowed {
 					t.Fatalf("request %d: want accepted, got denied", i)
 				}
 			}
-			if b.Request(1) {
+			if allowed, _ := b.Request(1); allowed {
 				t.Error("request after exhaustion: want denied, got accepted")
 			}
 		})
@@ -57,7 +57,7 @@ func TestTokenBucket_NeverExceedsCapacity(t *testing.T) {
 	attempts := int(capacity) + 2
 
 	for i := 0; i < attempts; i++ {
-		if b.Request(1) {
+		if allowed, _ := b.Request(1); allowed {
 			accepted++
 		}
 	}
@@ -70,16 +70,16 @@ func TestTokenBucket_NeverExceedsCapacity(t *testing.T) {
 func TestTokenBucket_RefillsOverTime(t *testing.T) {
 	b := NewTokenBucket(1, 100)
 
-	if !b.Request(1) {
+	if allowed, _ := b.Request(1); !allowed {
 		t.Fatal("first request must pass")
 	}
-	if b.Request(1) {
+	if allowed, _ := b.Request(1); allowed {
 		t.Fatal("second immediate request must fail")
 	}
 
 	time.Sleep(50 * time.Millisecond)
 
-	if !b.Request(1) {
+	if allowed, _ := b.Request(1); !allowed {
 		t.Error("after refill window, want accepted")
 	}
 }
@@ -94,7 +94,7 @@ func TestTokenBucket_ConcurrentExactCount(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if b.Request(1) {
+			if allowed, _ := b.Request(1); allowed {
 				accepted.Add(1)
 			}
 		}()

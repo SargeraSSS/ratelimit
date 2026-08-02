@@ -18,7 +18,7 @@ func TestLimiter_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if l.Allow("client1") {
+			if allowed, _ := l.Allow("client1"); allowed {
 				accepted.Add(1)
 			}
 		}()
@@ -29,7 +29,7 @@ func TestLimiter_ConcurrentAccess(t *testing.T) {
 		go func(id int) {
 			defer wg2.Done()
 			clientID := fmt.Sprintf("client-%d", id)
-			if !l.Allow(clientID) {
+			if allowed, _ := l.Allow(clientID); !allowed {
 				t.Errorf("unique client %s: want accepted, got denied", clientID)
 			}
 		}(i)
